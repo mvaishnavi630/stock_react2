@@ -6,7 +6,9 @@ import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 // import classes2 from "./Login.module.css";
 // import Table from "antd";
+import { Alert } from '@material-ui/lab';
 import {
+  ButtonBase,
   createMuiTheme,
   MuiThemeProvider,
   ThemeProvider,
@@ -48,7 +50,9 @@ class ExcelPage extends Component {
       rows: [],
       files: [],
       data:"NO",
+      name:"",
       errorMessage: null,
+      error:[],
       columns: [
         {
           title: "TICKER",
@@ -238,6 +242,7 @@ class ExcelPage extends Component {
         console.log(err);
       } else {
         let newRows = [];
+        let newerror=[];
         resp.rows.slice(1).map((row, index) => {
           if (row && row !== "undefined") {
             if (row[0] && row[3]) {
@@ -249,6 +254,37 @@ class ExcelPage extends Component {
                 age2: row[3],
               });
             }
+            else
+            {
+              if(!row[0] && !row[3])
+              {
+                console.log("heree");
+                newerror.push("Incomplete Data at ticker and price" + index+ "row");
+              }
+              else if(row[0] && !row[3])
+              {
+                newerror.push("Incomplete Data at price  of" + index + "row");
+              }
+              else if(!row[0] && row[3])
+              {
+                newerror.push("Incomplete Data at ticker  of" + index + "row");
+              }
+
+
+              // if(row[0]===null && row[3]===null)
+              // {
+              //   newerror.push("Incomplete Data at ticker and price" + index+ "row");
+              // }
+              // else if(row[0]===null && row[3]!==null)
+              // {
+              //   newerror.push("Incomplete Data at ticker  of" + index + "row");
+              // }
+              // else
+              // {
+              //   newerror.push("Incomplete Data at price  of" + index + "row");
+              // }
+
+            }
           }
         });
         if (newRows.length === 0) {
@@ -257,9 +293,11 @@ class ExcelPage extends Component {
           });
           return false;
         } else {
+            console.log(newerror);
           this.setState({
             cols: resp.cols,
             rows: newRows,
+            error:newerror,
             errorMessage: null,
           });
         }
@@ -267,7 +305,16 @@ class ExcelPage extends Component {
     });
     return false;
   };
-
+   storename(e)
+  {
+    
+    this.setState({name:e.target.value});
+    console.log("here"+this.state.name);
+  }
+  change(e)
+  {
+    this.setState({data:"NO"});
+  }
   render() {
     const columns = this.state.columns.map((col) => {
       return col;
@@ -451,124 +498,132 @@ const themes = createMuiTheme({
       }
     };
 
-    const checkfordissaperingform=(data)=>
+    
+    
+    function returnerror(error,data)
     {
-      if (data === "NO") {
-        return (
-          <div>
-             <Container className={this.useStyles.containerWidth}>
-       <div className={this.useStyles.root}>
-         <Typography
-          className={this.useStyles.title}
-          variant="h5"
-          id="tableTitle"
-          component="div"
-        >
-          FILL BELOW FORM
-        </Typography>
-
-        <ThemeProvider theme={theme}> 
-          <Grid container className={this.useStyles.textfield}>
-            <Grid item>
-          <form className={this.useStyles.textfield} noValidate>
-            <TextField
-              // className={classe.placeholder}
-              label="Enter Dashboard Name"
-              variant="standard"
-              id="standard-search"
-              inputProps={{ style: { fontSize: 13, color: "white" } }}
-              InputLabelProps={{ className: classes2.text_field }}
-            />
-            <span>&nbsp;&nbsp;&nbsp;&nbsp; </span>
-            <Button
-              variant="outlined"
-              color="primary"
-              style={{ "min-height": "45px", width: "15%" }}
-            >
-              <Clock hour12={false} /> IST
-            </Button>
-          </form>
-          </Grid>
-            <Grid item alignItems="stretch" style={{ display: "flex" }}>
-          <Button variant="outlined" color="primary">
-                CONTINUE
-              </Button>
-          </Grid>
-          </Grid> 
-         </ThemeProvider>
-        
-          <div>
-          <div>
-          
-
-
-
-
-
-
-
-            <Upload
-              name="file"
-              beforeUpload={this.fileHandler}
-              onRemove={() => this.setState({ rows: [] })}
-              multiple={false}
-            
-            >
-              <Button
-              
-                variant="contained"
-                color="primary"
-                style={{
-                  "min-height": "40px",
-                  width: "30%",
-                  backgroundColor: "green",
-                  fontSize: "17px",
-                  fontWeight: "600",
-                }}
-              >
-                Attach File here
-              
-              </Button>
-              <span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
-              <a
-                href="https://res.cloudinary.com/bryta/raw/upload/v1562751445/Sample_Excel_Sheet_muxx6s.xlsx"
-                target="_blank"
-                rel="noopener noreferrer"
-                download
-                style={{ color: "green" }}
-              >
-                Sample excel sheet
-              </a>
-            </Upload>
-          </div>
-
-        </div>
-        <div>
-          <div>
-            <TransitionsModal
-              rows={this.state.rows}
-              cols={columns}
-              parentCallback={this.handleCallback}
-            />
-          </div>
-       
-        </div>
-        </div>
-        </Container>
-        </div>
-       
-        );
-      } else {
-        return <div></div>;
-      }
+           console.log("error here:"+error);
+        if(data==="YES")
+        {
+           return <Alert severity="error">{error.map((er)=><li>{er}</li>)}</Alert>;
+        }
+        else
+        {
+          return <></>;
+        }
+     
+     
     }
-    const { data } = this.state;
+
+    
+
+    
+    
+    function showname(data,name)
+    {
+if(data==="YES")
+{
+return (<div>{name}</div>);
+}
+else
+{
+  return <></>;
+}
+    }
+
+    
 
     return (
       <>
-     {checkfordissaperingform(this.state.data)}
+      
+           {this.state.data==="NO" && 
+           <Container className={this.useStyles.containerWidth}>
+           <div className={this.useStyles.root}>
+             <Typography
+              className={this.useStyles.title}
+              variant="h5"
+              id="tableTitle"
+              component="div"
+            >
+              FILL BELOW FORM
+            </Typography>
+           <ThemeProvider theme={theme}> 
+  <Grid container className={this.useStyles.textfield}>
+    <Grid item>
+  <form className={this.useStyles.textfield} noValidate>
+    <TextField
+      // className={classe.placeholder}
+      label="Enter Dashboard Name"
+      onChange={this.storename.bind(this)}
+      variant="standard"
+      id="standard-search"
+      inputProps={{ style: { fontSize: 13, color: "white" } }}
+      InputLabelProps={{ className: classes2.text_field }}
+    />
+    <span>&nbsp;&nbsp;&nbsp;&nbsp; </span>
+  </form>
+  </Grid>
+  </Grid>    </ThemeProvider></div></Container>}
+
+           {showname(this.state.data,this.state.name)}
+ 
+ <div>
+{returnerror(this.state.error,this.state.data)}
+</div>
+
+        
+     {this.state.data==="NO" && <div>
+             <div>
+             <div>
+               <Upload
+                 name="file"
+                 beforeUpload={this.fileHandler}
+                 onRemove={() => this.setState({ rows: [] })}
+                 multiple={false}
+                 >
+                 <Button
+                   variant="contained"
+                   color="primary"
+                   style={{
+                     "min-height": "40px",
+                     width: "30%",
+                     backgroundColor: "green",
+                     fontSize: "17px",
+                     fontWeight: "600",
+                   }}
+                 >
+                   Attach File here
+                 
+                 </Button>
+                 <span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>
+                 <a
+                   href="https://res.cloudinary.com/bryta/raw/upload/v1562751445/Sample_Excel_Sheet_muxx6s.xlsx"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   download
+                   style={{ color: "green" }}
+                 >
+                   Sample excel sheet
+                 </a>
+               </Upload>
+             </div>
+   
+           </div>
+           <div>
+             <div>
+               <TransitionsModal
+                 rows={this.state.rows}
+                 cols={columns}
+                 parentCallback={this.handleCallback}
+               />
+             </div>
+          
+           </div>
+          
+           </div>}
 
         {check(this.state.data)}
+        {this.state.data==="YES" && <div><Button onClick={this.change.bind(this)}>Cancel</Button>{"              "}<Button>Reupload</Button></div>}
       </>
     );
   }
